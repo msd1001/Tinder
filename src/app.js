@@ -101,15 +101,42 @@ app.delete("/user", async (req, res) => {
 });
 
 // Update data of the user
-
-app.patch("/user", async (req, res) => {
+// app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
   // req.body is coming from postman
   // console.log(req.body);
-  const userId = req.body._id;
+  // if we pass _id from body through postman then use below method
+  // const userId = req.body._id;
+  // or if we are passing _id from url instead of body then we use req.params.userId to access it
+  const userId = req.params.userId;
   const data = req.body;
   // if in the data we are sending some field which is not defined in the userSchema then that will not be updated
 
   try {
+    // i do not want to change my _id,but i want the _id here so to know which document i am updating,
+    // Data sanitization or API validation
+    const ALLOWED_UPDATES = [
+      // "_id",
+      "photoUrl",
+      "about",
+      "gender",
+      "age",
+      "skills",
+    ];
+
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k),
+    );
+
+    // Data sanitization or API LEVEL validation
+    if (!isUpdateAllowed) {
+      throw new Error("Updates not Allowed ");
+    }
+
+    if (data.skills.length > 10) {
+      throw new Error("Skills can not be more than 10");
+    }
+
     const user = await User.findByIdAndUpdate({ _id: userId }, data, {
       returnDocument: "after",
       runValidators: true,
