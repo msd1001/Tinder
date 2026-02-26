@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 // Below we have created user Schema
 // After connecting database and server in app file , define schema. STEP 0(B) then step1 will start from creating API
 const userSchema = new mongoose.Schema(
@@ -25,10 +26,21 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
+      // DB Level validation with third party library called validators
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email address : " + value);
+        }
+      },
     },
     password: {
       type: String,
       required: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("Provide Strong password" + value);
+        }
+      },
     },
     age: {
       type: Number,
@@ -47,6 +59,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default:
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2E1ISMWr2Xdz5yB3pjWAgs0drcWCw9vya5A&s",
+      // DB Level Validation if any one try to enter invalid photo url
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid Photo URL:" + value);
+        }
+      },
     },
     // if user did  not pass about field then it will be automatically created with default value in db because of default value check
     about: {

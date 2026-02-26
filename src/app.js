@@ -122,6 +122,7 @@ app.patch("/user/:userId", async (req, res) => {
       "gender",
       "age",
       "skills",
+      "emailId",
     ];
 
     const isUpdateAllowed = Object.keys(data).every((k) =>
