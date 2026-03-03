@@ -1,177 +1,22 @@
 const express = require("express");
 const app = express();
-// to run database
 const connectDB = require("./config/database");
-
-const User = require("./models/user");
-
-// Another way of data validation
-const { validateSignUpData } = require("./utils/validation");
-
-const bcrypt = require("bcrypt");
 
 const cookieParser = require("cookie-parser");
 
-const jwt = require("jsonwebtoken");
-
-// for implementing Authentication at one time in all API
-const { userAuth } = require("./middlewares/auth.js");
-
-// STEP 1 : create an API to insert data into database. with app.post method post api will be created
-
-// we have used middleware so that we can receive  the data from postman dynamically otherwise we will get undefined error
-
 app.use(express.json());
-
-// when request will come , we will be able to parse it. It is for cookies-parser middleware. from below cmd we are adding cookie-parser middleware
-
 app.use(cookieParser());
 
-app.post("/signup", async (req, res) => {
-  console.log(req.body);
-  // Now our plan is to receive the data coming from postman body dynamically and send to server so that server read that data and send to database in this way we are removing dummy data
-  try {
-    // Below fn will overwrite the schema and db level  validation message only still the schema and db level validation will work.
+const authRouter = require("./routes/auth");
 
-    validateSignUpData(req);
+const profileRouter = require("./routes/profile");
 
-    // Encrypting the password
+const requestRouter = require("./routes/requests");
 
-    const { firstName, lastName, emailId, password } = req.body;
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    // Dummy Data
-    // const userObj = {
-    //   firstName: "MS",
-    //   lastName: "Dhoni",
-    //   emailId: "Ms.Dhoni@gmail.com",
-    //   password: "Dhoni@123",
-    // };
-
-    // Now we want to save this data in User Collection on database , we need to create new instance of the user modal
-
-    //STEP2:  By creating new  instance of user modal
-    //  i am creating a new user.
-
-    // const user = new User(userObj); // dummy data pass krne ka method
-
-    // const user = new User(req.body); // this is bad way of receiving data from postman. use below method
-
-    const user = new User({
-      firstName,
-      lastName,
-      emailId,
-      password: passwordHash,
-    });
-
-    // STEP3: from below fn data will be saved to database
-
-    // database operation must be performed in try & catch block
-    // with help of below code we r able to save data to database
-    await user.save();
-    res.send(" User Added Successfully");
-  } catch (err) {
-    res.status(400).send(err.message);
-  }
-});
-
-app.post("/login", async (req, res) => {
-  try {
-    // req.body mtlb postman sai kuch mil rha hai
-    const { emailId, password } = req.body;
-
-    const user = await User.findOne({ emailId: emailId });
-
-    // console.log("user====>", user);
-
-    if (!user) {
-      throw new Error("Invalid Credentials");
-    }
-    // old method of password creation, for new method check user.js
-
-    // const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    const isPasswordValid = await user.validatePassword(password);
-
-    if (isPasswordValid) {
-      // create JWT Token
-
-      // with help of expiresIn, we are expiring the token
-
-      //  const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
-      //   expiresIn: "1d",
-      // });
-
-      // Instead of creating JWT token here , we will create it on user.js
-
-      // agar password valid hai mtlb jis user ka email & password diya hai wahi user db sai mila hai
-
-      const token = await user.getJWT();
-      // console.log(token);
-
-      // Add token into cookies & send response back to the user( from where post login api is hit)
-      //  we are setting cookie with help of express.js
-      // we can also expire cookie with help of expires field
-      res.cookie("token", token, {
-        expires: new Date(Date.now() + 8 * 3600000),
-      });
-      // res.send mtlb hmlog kuch send kr rhe hai
-      res.send("Login Successful");
-    } else {
-      throw new Error("Invalid Credentials");
-    }
-  } catch (err) {
-    res.status(400).send("ERROR " + err.message);
-  }
-});
-
-// auth middleware is passed below before calling async request handler we call
-// auth middleware if this middleware succedd then only request handler will be executed,
-app.get("/profile", userAuth, async (req, res) => {
-  // to read cookies we need middleware called cookie-parser
-  try {
-    /* Below steps i have done in auth.js . so that we do not need to do this
-    // in each api call
-    const cookies = req.cookies;
-    // console.log(cookies);
-    const { token } = cookies;
-
-    if (!token) {
-      throw new Error("Invalid Token");
-    }
-
-    // validate myToken
-
-    const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");
-    // decodedMessage will contain the _id which we have sent through jwt.sign
-
-    const { _id } = decodedMessage;
-    // console.log(_id);
-
-    const user = await User.findById(_id);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    res.send(user);
-
-    // res.send("Reading Cookies");
-    */
-
-    const user = req.user;
-    console.log(user);
-    res.send(user);
-  } catch (err) {
-    res.status(400).send("ERROR " + err.message);
-  }
-});
-
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-  const user = req.user;
-  // sending a connection request
-  res.send(user.firstName + " sent connection request");
-});
-// STEP 0 (A) B.B.B.IMP first connect to Database then connect to server // connect to server means we are sending api request
 connectDB()
   .then(() => {
     console.log("Database connection established");
@@ -182,7 +27,3 @@ connectDB()
   .catch((error) => {
     console.error("Database cannot be connected");
   });
-
-// app.listen(7777, () => {
-//   console.log("Server is Successfully running at 7777....*");
-// });
