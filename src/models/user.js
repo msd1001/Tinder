@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 // Below we have created user Schema
 // After connecting database and server in app file , define schema. STEP 0(B) then step1 will start from creating API
 const userSchema = new mongoose.Schema(
@@ -79,6 +81,29 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+// mongoose schema method , offloading the   creation logic of  JWT Token from app.js file
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  // this keyword represent user
+  const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
+    expiresIn: "1d",
+  });
+  return token;
+};
+
+// mongoose schema method
+
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
+  const passwordHash = user.password;
+
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    passwordHash,
+  );
+  return isPasswordValid;
+};
 
 // Now we will be creating Mongoose model
 // Below we have created user Model
