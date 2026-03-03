@@ -18,6 +18,10 @@ We are grouping the API and creating one seperate router for each group of api.
 - PATCH /profile/edit (edit my own profile data)
 - PATCH /profile/password (for edit my own password we are using different API)
 
+// First user should be login..
+// then compare existing password with given password
+//then allow to update password
+
 ## ConnectionRequestRouter
 
 -POST /request/send/interested/:userId (LIKE) // as user we are sending request to profile
