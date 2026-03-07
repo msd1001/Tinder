@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
     emailId: {
       type: String,
       required: true,
+      // We are setting unique field to true then automatically unique property will get index, If in our database there is million of records of emailIDs then we perform .findOne({ emailId: emailId }); then output we will get fast, otherwise without index output will be very slow
       unique: true,
       trim: true,
       lowercase: true,
