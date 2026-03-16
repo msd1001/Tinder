@@ -60,11 +60,51 @@ requestRouter.post(
 
       const data = await connectionRequest.save();
       res.json({
-        message: req.user.firstName + " " + status + toUser.firstName,
+        message: req.user.firstName + " " + status + " " + toUser.firstName,
         data: data,
       });
     } catch (err) {
       res.status(400).send("ERROR : " + err.message);
+    }
+  },
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user;
+      const { status, requestId } = req.params;
+      //status hamara accepted ya rejected hogga
+
+      const allowedStatus = ["accepted", "rejected"];
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).json({ message: "Status is not allowed" });
+      }
+
+      // jisko friend request send kiya hai wahi accept kr sktta hai mtlb touserId jo hai vo abhi logged in  kiya huva hai,// loggedInid == toUserid
+
+      // ab database mai search kr rhe hai to find  one connection  with particular requestId,touSerId and status should be interested
+      const connectionRequest = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+
+      if (!connectionRequest) {
+        return res
+          .status(404)
+          .json({ message: "Connection request not found" });
+      }
+
+      // we are updating status to accepted or rejected
+      connectionRequest.status = status;
+
+      const data = await connectionRequest.save();
+      res.json({ message: "Connection request" + status, data });
+    } catch (err) {
+      res.status(400).send("ERROR: " + err.message);
     }
   },
 );

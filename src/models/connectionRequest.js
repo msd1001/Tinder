@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 // 1 . Create schema
 // 2 create API
-// 3 create instance of the schema
-// 4 Save data to database
+// 3 checking the edge case
+// 4 create instance of the schema
+// 5 Save data to database
 
 const connectionRequestSchema = new mongoose.Schema(
   {
@@ -11,11 +12,13 @@ const connectionRequestSchema = new mongoose.Schema(
     fromUserId: {
       // type is exact same as _id in mongoose
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // refernce to user collection or user model or user table or connecting link between connection and user table
       required: true,
     },
     // toUserId (Receiver)
     toUserId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // refernce to user collection
       required: true,
     },
     status: {
