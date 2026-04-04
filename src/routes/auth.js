@@ -51,8 +51,13 @@ authRouter.post("/signup", async (req, res) => {
 
     // database operation must be performed in try & catch block
     // with help of below code we r able to save data to database
-    await user.save();
-    res.send(" User Added Successfully");
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT();
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+
+    res.json({ message: " User Added Successfully", data: savedUser });
   } catch (err) {
     res.status(400).send(err.message);
   }
