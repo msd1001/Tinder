@@ -4,6 +4,8 @@ const { userAuth } = require("../middlewares/auth.js");
 const ConnectionRequest = require("../models/connectionRequest.js");
 const User = require("../models/user.js");
 
+const sendEmail = require("../utils/sendEmail.js");
+
 //  toUseId mtlb jisee request beja gaya hai
 //  : (colon) represent  dynamic value which we can receive from client or postman,
 // :status , status could be interested or pass, value will come from api or :toUserId
@@ -59,6 +61,11 @@ requestRouter.post(
       });
 
       const data = await connectionRequest.save();
+      // Email
+      const emailRes = await sendEmail.run(
+        req.user.firstName + " " + status + " " + toUser.firstName,
+      );
+      console.log(emailRes);
       res.json({
         message: req.user.firstName + " " + status + " " + toUser.firstName,
         data: data,
