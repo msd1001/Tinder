@@ -3,6 +3,7 @@ const app = express();
 const connectDB = require("./config/database");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+require("dotenv").config();
 
 // Backend should know about frontend domain
 // and to set token inside cookie in browser we need to provide different options object (origin and credientials) in cors. part-01
@@ -28,7 +29,7 @@ app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("Database connection established");
-    app.listen(7777, () => {
+    app.listen(process.env.PORT, () => {
       console.log("Server is Successfully running at 7777....*");
     });
   })

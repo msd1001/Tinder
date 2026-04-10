@@ -28,6 +28,6 @@ app.get("/getUserData", (req, res) => {
   }
 });
 
-app.listen(7777, () => {
+app.listen(process.env.PORT, () => {
   console.log("Server is Successfully running at 7777....*");
 });
