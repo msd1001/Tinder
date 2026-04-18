@@ -4,6 +4,7 @@ const connectDB = require("./config/database");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
+require("./utils/cronjob.js");
 
 // Backend should know about frontend domain
 // and to set token inside cookie in browser we need to provide different options object (origin and credientials) in cors. part-01
