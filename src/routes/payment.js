@@ -73,6 +73,8 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
       webhookSignature,
       "pkmb$123",
     );
+
+    console.log("isWebhookValid===>", isWebhookValid);
     // webhook is way to commuicate to Backend and Frontend and inform user
 
     // if webhook is valid then only payment is captured and is either successful or failure.if webhook is invalid then throw status 400 error
@@ -98,6 +100,7 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     payment.status = paymentDetails.status;
 
     await payment.save();
+    console.log("payment save");
 
     // find user on database
     //payment sai user_id mil rhi because userId is defined on payment schema
@@ -105,6 +108,7 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     user.isPremium = true;
     user.membershipType = payment.notes.membershipType;
     await user.save();
+    console.log("user save");
 
     // update user as premium
 
