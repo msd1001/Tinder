@@ -13,7 +13,7 @@ const {
 } = require("razorpay/dist/utils/razorpay-utils");
 const User = require("../models/user.js");
 
-// creating our create order API
+// STEP 1 creating our create order API
 paymentRouter.post("/payment/create", userAuth, async (req, res) => {
   // code to create order on razorpay
   try {
@@ -122,6 +122,19 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     return res.status(200).json({ msg: "Webhook Received Successfully" });
   } catch (err) {
     return res.status(500).json({ msg: err.message });
+  }
+});
+
+// STEP 3 : ===> Required for payment verification and change in UI
+
+paymentRouter.get("/premium/verify", userAuth, async (req, res) => {
+  // userAuth hai that's why we are able to do req.user
+  const user = req.user;
+
+  if (user.isPremium) {
+    return res.json({ isPremium: true });
+  } else {
+    return res.json({ isPremium: false });
   }
 });
 
